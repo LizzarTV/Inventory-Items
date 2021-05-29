@@ -21,11 +21,19 @@ export class UpdateItemHandler implements ICommandHandler<UpdateItemCommand> {
         const { id, title, active } = command;
         await this.validateItem(id, title, active);
         const model = await this.repository.findById(id);
-        const item = this.eventPublisher.mergeObjectContext(model);
-        this.updateTitle(item, title);
-        this.updateActive(item, active);
-        item.commit();
-        await this.repository.save(item);
+        if (model !== null) {
+            const item = this.eventPublisher.mergeObjectContext(model);
+            this.updateTitle(item, title);
+            this.updateActive(item, active);
+            item.commit();
+            await this.repository.save(item);
+        } else {
+            throw new RpcException({
+                code: HttpStatus.NOT_FOUND,
+                message: 'Entity not found',
+            });
+        }
+
     }
 
     private updateTitle(item: AppDomain, title: string): void {
