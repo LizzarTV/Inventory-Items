@@ -3,6 +3,8 @@ import {CommandBus, QueryBus} from "@nestjs/cqrs";
 import {ExceptionFilter} from "../../shared/base.filter";
 import {Ctx, MessagePattern, Payload, RmqContext} from "@nestjs/microservices";
 import {CreateItem, DeleteItem, GetItem, UpdateItem} from "../dtos/app.dto";
+import {GetItemsQuery} from "../../application/queries/impl/GetItems.query";
+import {GetItemQuery} from "../../application/queries/impl/GetItem.query";
 
 @Controller()
 export class AppController {
