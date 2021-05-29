@@ -5,6 +5,10 @@ import {Ctx, MessagePattern, Payload, RmqContext} from "@nestjs/microservices";
 import {CreateItem, DeleteItem, GetItem, UpdateItem} from "../dtos/app.dto";
 import {GetItemsQuery} from "../../application/queries/impl/GetItems.query";
 import {GetItemQuery} from "../../application/queries/impl/GetItem.query";
+import {CreateItemCommand} from "../../application/commands/impl/CreateItem.command";
+import {UpdateItemCommand} from "../../application/commands/impl/UpdateItem.command";
+import {DeleteItemCommand} from "../../application/commands/impl/DeleteItem.command";
+import {RestoreItemCommand} from "../../application/commands/impl/RestoreItem.command";
 
 @Controller()
 export class AppController {
