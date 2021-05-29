@@ -5,13 +5,14 @@ import { v4 as uuidv4 } from 'uuid';
 import slugify from 'slugify';
 import {RpcException} from "@nestjs/microservices";
 import {HttpStatus} from "@nestjs/common";
+import {AppRepository} from "../../../infrastructure/repositories/app.repository";
 
 @CommandHandler(CreateItemCommand)
 export class CreateItemHandler implements ICommandHandler<CreateItemCommand> {
     constructor(
         private readonly eventPublisher: EventPublisher,
         private readonly factory: AppFactory,
-        // TODO: Add Repository
+        private readonly repository: AppRepository
     ) {}
 
     public async execute(command: CreateItemCommand) {
@@ -28,12 +29,12 @@ export class CreateItemHandler implements ICommandHandler<CreateItemCommand> {
         const item = this.eventPublisher.mergeObjectContext(
             this.factory.createFactory({ id, title, slug, active: false }),
         );
-        item.createItem();
-        // TODO: Save Item
+        item.commit();
+        await this.repository.save(item);
     }
 
     private async validateItem(title: string): Promise<void> {
-        const categories = []; // Replace With Repository Call
+        const categories = await this.repository.findByTitle(title);
         if (!title || title.trim().length === 0) {
             throw new RpcException({
                 code: HttpStatus.BAD_REQUEST,
