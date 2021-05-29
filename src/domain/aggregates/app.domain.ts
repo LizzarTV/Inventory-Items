@@ -3,6 +3,12 @@ import {AggregateRoot} from "@nestjs/cqrs";
 import {RpcException} from "@nestjs/microservices";
 import {HttpStatus} from "@nestjs/common";
 import {NotEmptyStringValidation} from "../validations/not-empty.validation";
+import {AnemicApp} from "../models/app.model";
+import {CreatedDomainEvent} from "../events/created.event";
+import {DeletedDomainEvent} from "../events/deleted.event";
+import {ErrorDomainEvent} from "../events/error.event";
+import {RestoredDomainEvent} from "../events/restored.event";
+import {UpdatedDomainEvent} from "../events/updated.event";
 
 export class AppDomain extends AggregateRoot {
 
@@ -26,7 +32,7 @@ export class AppDomain extends AggregateRoot {
         return !!this.updated_at;
     }
 
-    public toAnemic(): any {
+    public toAnemic(): AnemicApp {
         return {
             id: this.id,
             title: this.title,
@@ -43,9 +49,11 @@ export class AppDomain extends AggregateRoot {
     public createItem(): void {
         try {
             this.validateAll(this.title, this.slug);
-            // TODO: CreatedEvent
+            const event = new CreatedDomainEvent(this.toAnemic());
+            this.apply(event);
         } catch (e) {
-            // TODO: ErrorEvent
+            const event = new ErrorDomainEvent(this.toAnemic());
+            this.apply(event);
         }
     }
 
@@ -53,9 +61,11 @@ export class AppDomain extends AggregateRoot {
         try {
             this.validateTitle(title);
             this.title = title;
-            // TODO: UpdatedEvent
+            const event = new UpdatedDomainEvent(this.toAnemic());
+            this.apply(event);
         } catch (e) {
-            // TODO: ErrorEvent
+            const event = new ErrorDomainEvent(this.toAnemic());
+            this.apply(event);
         }
     }
 
@@ -63,20 +73,24 @@ export class AppDomain extends AggregateRoot {
         try {
             this.validateSlug(slug);
             this.slug = slug;
-            // TODO: UpdatedEvent
+            const event = new UpdatedDomainEvent(this.toAnemic());
+            this.apply(event);
         } catch (e) {
-            // TODO: ErrorEvent
+            const event = new ErrorDomainEvent(this.toAnemic());
+            this.apply(event);
         }
     }
 
     public updateActive(active: boolean): void {
         this.active = active;
-        // TODO: UpdatedEvent
+        const event = new UpdatedDomainEvent(this.toAnemic());
+        this.apply(event);
     }
 
     public delete(): void {
         if (this.isDeleted()) {
-            // TODO: ErrorEvent
+            const event = new ErrorDomainEvent(this.toAnemic());
+            this.apply(event);
             throw new RpcException({
                 code: HttpStatus.BAD_REQUEST,
                 message: 'Entity is already deleted',
@@ -84,13 +98,15 @@ export class AppDomain extends AggregateRoot {
         } else {
             this.deleted_at = new Date();
             this.updated_at = new Date();
-            // TODO: DeletedEvent
+            const event = new DeletedDomainEvent(this.toAnemic());
+            this.apply(event);
         }
     }
 
     public restore(): void {
         if (!this.isDeleted()) {
-            // TODO: ErrorEvent
+            const event = new ErrorDomainEvent(this.toAnemic());
+            this.apply(event);
             throw new RpcException({
                 code: HttpStatus.BAD_REQUEST,
                 message: 'Entity is not deleted',
@@ -98,7 +114,8 @@ export class AppDomain extends AggregateRoot {
         } else {
             this.deleted_at = null;
             this.updated_at = new Date();
-            // TODO: RestoredEvent
+            const event = new RestoredDomainEvent(this.toAnemic());
+            this.apply(event);
         }
     }
 
