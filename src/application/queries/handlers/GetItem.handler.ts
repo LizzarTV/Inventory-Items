@@ -21,7 +21,7 @@ export class GetItemHandler implements IQueryHandler<GetItemQuery> {
         }
         throw new RpcException({
             code: HttpStatus.NOT_FOUND,
-            message: 'Entity not found'
+            message: `Entity with ID ${query.id} not found`
         })
     }
 }
